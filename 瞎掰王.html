@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤥 瞎掰王</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0f1a;
+  --surface: #181828;
+  --card: #1e1e32;
+  --accent: #e94560;
+  --gold: #f5a623;
+  --green: #22c55e;
+  --blue: #38bdf8;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: rgba(233,69,96,0.25);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.page { display: none; min-height: 100vh; padding: 20px; flex-direction: column; align-items: center; justify-content: center; }
+.page.active { display: flex; }
+
+/* NIGHT PAGE */
+#page-night.active {
+  background: #04040d;
+  position: fixed; inset: 0; z-index: 50;
+}
+
+/* ---- CARD ---- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%; max-width: 480px;
+}
+
+/* ---- BUTTONS ---- */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 20px; border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: all 0.18s; width: 100%; margin-top: 10px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-red  { background: linear-gradient(135deg,#e94560,#b91c3a); color: #fff; }
+.btn-red:hover { filter: brightness(1.1); box-shadow: 0 0 18px rgba(233,69,96,0.5); }
+.btn-ghost { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--accent); }
+.btn-gold { background: linear-gradient(135deg,#f5a623,#d97706); color: #1a0a00; }
+.btn-green { background: linear-gradient(135deg,#16a34a,#15803d); color: #fff; }
+.btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; margin-top: 0; border-radius: 8px; }
+
+/* ---- INPUTS ---- */
+input[type=text] {
+  width: 100%; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 1rem; outline: none;
+  transition: border-color 0.2s;
+}
+input[type=text]:focus { border-color: var(--accent); }
+.add-row { display: flex; gap: 8px; }
+.add-row input { flex: 1; }
+
+/* ---- PLAYER TAGS ---- */
+.player-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; min-height: 36px; }
+.ptag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(233,69,96,0.12); border: 1px solid rgba(233,69,96,0.3);
+  padding: 5px 12px; border-radius: 20px; font-size: 0.88rem;
+}
+.ptag .x { cursor: pointer; color: var(--muted); }
+.ptag .x:hover { color: var(--accent); }
+
+/* ---- MISC ---- */
+h2 { font-size: 1.4rem; font-weight: 800; }
+h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+.section { font-size: 0.75rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin: 14px 0 8px; font-weight: 700; }
+.muted { color: var(--muted); font-size: 0.88rem; }
+.center { text-align: center; }
+.mt8 { margin-top: 8px; }
+.mt16 { margin-top: 16px; }
+.mt24 { margin-top: 24px; }
+
+/* ---- BADGE ---- */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px;
+}
+.badge-red  { background: rgba(233,69,96,0.18); color: #fb7185; border: 1px solid rgba(233,69,96,0.35); }
+.badge-gold { background: rgba(245,166,35,0.18); color: #fbbf24; border: 1px solid rgba(245,166,35,0.35); }
+.badge-blue { background: rgba(56,189,248,0.15); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.25); }
+
+/* ---- WORD DISPLAY ---- */
+.word-box {
+  text-align: center; padding: 28px;
+  background: var(--surface); border-radius: 14px;
+  border: 1px solid rgba(233,69,96,0.3);
+  margin: 16px 0;
+}
+.word-big { font-size: 2.6rem; font-weight: 900; letter-spacing: 4px; color: #fb7185; }
+.word-note { font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
+
+/* ---- ROLE CARD ---- */
+.role-reveal {
+  text-align: center; padding: 32px 24px;
+  border-radius: 16px; margin: 16px 0;
+}
+.role-reveal.honest { background: rgba(34,197,94,0.1); border: 2px solid rgba(34,197,94,0.4); }
+.role-reveal.bluffer { background: rgba(233,69,96,0.1); border: 2px solid rgba(233,69,96,0.3); }
+.role-emoji { font-size: 2.8rem; margin-bottom: 8px; }
+.role-name { font-size: 1.4rem; font-weight: 900; }
+
+/* ---- NIGHT STARS ---- */
+.night-stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.4) 0%,transparent 100%),
+    radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,0.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,0.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 55% 45%, rgba(255,255,255,0.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 25% 80%, rgba(255,255,255,0.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 0%,transparent 100%);
+}
+.night-content { position: relative; z-index: 1; width: 100%; max-width: 480px; }
+.night-name-btn {
+  display: block; width: 100%;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7); padding: 13px; border-radius: 10px;
+  font-size: 1rem; font-weight: 600; cursor: pointer; margin: 6px 0;
+  transition: all 0.2s;
+}
+.night-name-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25); }
+
+/* ---- TIMER ---- */
+.timer-wrap { position: relative; width: 110px; height: 110px; margin: 20px auto; }
+.timer-svg { transform: rotate(-90deg); }
+.timer-circle-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 8; }
+.timer-circle { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.4s; }
+.timer-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.9rem; font-weight: 900; }
+
+/* ---- MEANING BOX (for 老實人) ---- */
+.meaning-box {
+  background: rgba(34,197,94,0.08); border: 2px solid rgba(34,197,94,0.4);
+  border-radius: 14px; padding: 20px 22px; margin: 16px 0; text-align: center;
+}
+.meaning-label { font-size: 0.75rem; color: #4ade80; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700; }
+.meaning-text { font-size: 1.1rem; line-height: 1.7; font-weight: 600; }
+
+/* ---- DAY PHASE ---- */
+.speaker-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px; margin: 5px 0;
+  transition: all 0.3s;
+  border: 1px solid transparent;
+}
+.speaker-row.current {
+  background: rgba(233,69,96,0.12); border-color: rgba(233,69,96,0.35);
+}
+.speaker-row.done { opacity: 0.5; }
+.speaker-row:hover { background: rgba(255,255,255,0.04); }
+.speaker-row.sticker-active { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.4); }
+.speaker-row .sname { flex: 1; font-weight: 600; }
+.sticker-btn {
+  background: rgba(245,166,35,0.15); border: 1px solid rgba(245,166,35,0.35);
+  color: #fbbf24; padding: 5px 10px; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.sticker-btn:hover { background: rgba(245,166,35,0.3); }
+.sticker-btn.active { background: rgba(245,166,35,0.4); border-color: #f5a623; color: #f5a623; }
+.sticker-indicator { font-size: 1.1rem; }
+
+/* ---- GUESS PHASE ---- */
+.guess-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 14px 16px; margin: 6px 0;
+  background: var(--surface); border: 2px solid transparent;
+  border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 600;
+  color: var(--text); transition: all 0.2s;
+}
+.guess-btn:hover { border-color: rgba(233,69,96,0.5); background: rgba(233,69,96,0.08); }
+.guess-btn.selected { background: rgba(233,69,96,0.15); border-color: var(--accent); }
+.guess-btn .check { font-size: 1.2rem; opacity: 0; transition: opacity 0.2s; }
+.guess-btn.selected .check { opacity: 1; }
+
+/* ---- REVEAL ---- */
+.reveal-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px; margin: 5px 0;
+  background: var(--surface);
+}
+.reveal-role { font-size: 0.8rem; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+.role-honest-tag { background: rgba(34,197,94,0.2); color: #4ade80; }
+.role-bluff-tag  { background: rgba(233,69,96,0.15); color: #fb7185; }
+.role-thinker-tag { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+.delta { font-weight: 900; font-size: 1rem; }
+.delta.plus { color: #4ade80; }
+.delta.minus { color: #f87171; }
+.delta.zero { color: var(--muted); }
+
+/* ---- SCOREBOARD ---- */
+.score-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 10px; margin: 5px 0;
+  background: var(--surface);
+}
+.score-row.rank1 { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.3); }
+.score-row.rank2 { background: rgba(148,163,184,0.07); border: 1px solid rgba(148,163,184,0.2); }
+.score-row.rank3 { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.2); }
+.medal { font-size: 1.2rem; width: 26px; }
+.sn { flex: 1; font-weight: 600; }
+.pts { font-size: 1.1rem; font-weight: 900; color: #fb7185; }
+
+/* ---- PROGRESS ---- */
+.progress-wrap { background: rgba(255,255,255,0.07); border-radius: 4px; height: 5px; margin: 6px 0; }
+.progress-fill { height: 5px; border-radius: 4px; background: linear-gradient(90deg,#e94560,#f5a623); transition: width 0.5s; }
+
+/* ---- HOME LOGO ---- */
+.logo { font-size: 72px; animation: bob 3s ease-in-out infinite; display: block; text-align: center; }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
+.home-title {
+  font-size: 2.2rem; font-weight: 900; text-align: center; margin: 12px 0 6px;
+  background: linear-gradient(135deg,#e94560,#f5a623);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* ---- TIP BOX ---- */
+.tip { background: rgba(56,189,248,0.07); border: 1px solid rgba(56,189,248,0.2); border-radius: 10px; padding: 12px 14px; font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin: 10px 0; }
+.tip strong { color: var(--blue); }
+
+/* ---- RULES TOGGLE ---- */
+details summary { cursor: pointer; color: var(--muted); font-size: 0.88rem; padding: 8px 0; list-style: none; }
+details summary::before { content: '▶ '; }
+details[open] summary::before { content: '▼ '; }
+details .rule-content { padding: 10px 0; }
+
+/* ---- ERROR ---- */
+.err { color: var(--accent); font-size: 0.85rem; margin-top: 6px; display: none; }
+
+.float-logo { font-size: 3rem; animation: bob 3s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<!-- ==================== HOME ==================== -->
+<div class="page active" id="page-home">
+  <div class="logo">🤥</div>
+  <div class="home-title">瞎掰王</div>
+  <p class="muted center mt8" style="margin-bottom:20px">誰是老實人？誰在瞎掰？</p>
+
+  <div class="card">
+    <details>
+      <summary>遊戲說明</summary>
+      <div class="rule-content">
+        <div class="tip">
+          每輪一人當<strong>想想</strong>，其他人抽角色：一個<strong>老實人</strong>（知道詞語真正的意思）+ 其餘<strong>瞎掰人</strong>（要編造假解釋）。<br><br>
+          🌙 天黑：老實人偷看真正意思（9秒）<br>
+          ☀️ 天亮：每個人輪流說出自己的「解釋」<br>
+          🤥 公蝦毀貼紙：想想可貼給最唬爛的人<br>
+          🎯 想想最後猜誰是老實人<br><br>
+          <strong>計分：</strong><br>
+          猜中老實人 → 老實人＋1，想想＋1<br>
+          猜錯（選到瞎掰人）→ 那個瞎掰人＋1<br>
+          貼紙貼到瞎掰人 → 瞎掰人－1，想想＋1<br>
+          貼紙貼到老實人 → 想想－3，老實人－1<br><br>
+          所有人都當過想想後遊戲結束！
+        </div>
+      </div>
+    </details>
+
+    <div class="section">新增玩家（4-9人）</div>
+    <div class="add-row">
+      <input type="text" id="name-input" placeholder="輸入名字…" maxlength="8">
+      <button class="btn btn-red btn-sm" onclick="addPlayer()">加入</button>
+    </div>
+    <div class="player-list" id="player-list"></div>
+    <div class="err" id="home-err"></div>
+    <button class="btn btn-red mt16" onclick="startGame()">🎲 開始遊戲</button>
+  </div>
+</div>
+
+<!-- ==================== PICK THINKER ==================== -->
+<div class="page" id="page-pick-thinker">
+  <div class="card">
+    <div class="center" style="margin-bottom:16px;">
+      <span class="badge badge-blue" id="pt-round-badge">第 1 輪</span>
+      <div style="font-size:1.2rem;font-weight:800;margin-top:12px;">誰來當想想？</div>
+      <div class="muted mt8" style="font-size:0.85rem;">大家討論決定後點選那個人</div>
+    </div>
+    <div id="pick-thinker-list"></div>
+  </div>
+</div>
+
+<!-- ==================== ROUND INTRO ==================== -->
+<div class="page" id="page-round-intro">
+  <div class="card">
+    <div class="center">
+      <span class="badge badge-blue" id="ri-round-badge">第 1 輪</span>
+      <div class="section mt8">本輪 想想 是</div>
+      <div style="font-size:2rem;font-weight:900;color:#7dd3fc;margin:4px 0" id="ri-thinker">—</div>
+    </div>
+
+    <div class="word-box">
+      <div class="word-note">本輪詞語（所有人都能看）</div>
+      <div class="word-big" id="ri-word">—</div>
+      <div class="word-note mt8">先不知道意思，等遊戲開始！</div>
+    </div>
+
+    <div class="tip">
+      <strong>想想</strong> 請把手機交給其他人輪流查看各自的角色（<strong>想想不用抽</strong>）。
+    </div>
+    <button class="btn btn-red" onclick="startRolePeek()">👀 開始偷看角色</button>
+  </div>
+</div>
+
+<!-- ==================== ROLE PEEK ==================== -->
+<div class="page" id="page-role-peek">
+  <div class="card">
+    <div class="center">
+      <div class="muted">請把手機交給</div>
+      <div style="font-size:2rem;font-weight:900;margin:6px 0" id="peek-name">—</div>
+      <div class="muted">其他人請先看向別處</div>
+    </div>
+    <div id="peek-action">
+      <button class="btn btn-red mt16" onclick="showRole()">🙈 查看我的角色</button>
+    </div>
+    <div id="peek-role-display" style="display:none;">
+      <div class="role-reveal honest" id="peek-reveal-card" style="margin-top:16px;">
+        <div class="role-emoji" id="peek-emoji">🙂</div>
+        <div class="role-name" id="peek-role-name">老實人</div>
+        <div class="muted mt8" id="peek-role-hint"></div>
+      </div>
+
+      <button class="btn btn-ghost mt8" id="peek-remember-btn" onclick="nextPeek()" style="display:none;">✅ 我記住了，交給下一位</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== NIGHT ==================== -->
+<div class="page" id="page-night">
+  <div class="night-stars"></div>
+  <div class="night-content" style="text-align:center;">
+
+    <!-- 準備階段 -->
+    <div id="night-pre">
+      <div style="font-size:3.5rem;margin-bottom:16px">🌙</div>
+      <div style="font-size:1.4rem;font-weight:900;margin-bottom:8px">所有人都偷看完了嗎？</div>
+      <div class="muted" style="margin-bottom:28px;font-size:0.9rem;">按下按鈕，遊戲正式開始</div>
+      <div style="display:flex;justify-content:center;">
+        <button class="btn btn-gold" onclick="startNightPhase()" style="max-width:320px;width:100%;font-size:1.1rem;">🌙 開始天黑</button>
+      </div>
+    </div>
+
+    <!-- 天黑 -->
+    <div id="night-dark" style="display:none;">
+      <div style="font-size:4rem;margin-bottom:20px;animation:bob 3s ease-in-out infinite">🌙</div>
+      <div style="font-size:2rem;font-weight:900;letter-spacing:2px;">天黑請閉眼</div>
+    </div>
+
+    <!-- 老實人睜眼看答案 -->
+    <div id="night-honest" style="display:none;">
+      <div style="font-size:2.5rem;margin-bottom:12px">👁️</div>
+      <div style="font-size:1.5rem;font-weight:900;letter-spacing:2px;margin-bottom:16px;">老實人請睜眼</div>
+      <!-- 1秒後才顯示 -->
+      <div id="night-honest-answer" style="display:none;">
+        <div class="meaning-box" style="max-width:360px;margin:0 auto 10px;text-align:left;">
+          <div class="meaning-label">📖 詞語真正的意思</div>
+          <div id="night-answer-content" style="margin-top:8px;line-height:1.7;"></div>
+        </div>
+        <div class="timer-wrap" style="margin:6px auto 0;">
+          <svg class="timer-svg" width="90" height="90" viewBox="0 0 110 110">
+            <circle class="timer-circle-bg" cx="55" cy="55" r="48"/>
+            <circle class="timer-circle" id="night-timer-circle" cx="55" cy="55" r="48"
+              stroke-dasharray="301.6" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-text" id="night-timer-text">9</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 天亮按鈕 -->
+    <div id="night-dawn" style="display:none;">
+      <div style="font-size:4rem;margin-bottom:20px">☀️</div>
+      <div style="font-size:2rem;font-weight:900;letter-spacing:2px;margin-bottom:24px;">天亮請睜眼</div>
+      <div style="display:flex;justify-content:center;">
+        <button class="btn btn-gold" onclick="startDay()" style="max-width:320px;width:100%;font-size:1.1rem;">▶ 開始日間討論</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DAY ==================== -->
+<div class="page" id="page-day">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span class="badge badge-gold">☀️ 日間討論</span>
+      <span class="badge badge-blue" id="day-round-badge">第 1 輪</span>
+    </div>
+
+    <div class="word-box" style="padding:14px 20px;margin:0 0 14px;">
+      <div class="word-note">本輪詞語</div>
+      <div class="word-big" id="day-word" style="font-size:1.8rem;">—</div>
+    </div>
+
+    <div class="tip" style="margin-bottom:12px;">
+      <strong>想想</strong>（<span id="day-thinker">—</span>）點名每位玩家說出解釋，過程中可貼公蝦毀貼紙。
+    </div>
+
+    <div class="section">回答順序 <span class="muted">（點名字貼公蝦毀貼紙）</span></div>
+    <div id="speaker-list"></div>
+
+    <button class="btn btn-red mt16" onclick="goToGuess()">🎯 我想好了，進入猜測</button>
+  </div>
+</div>
+
+<!-- ==================== GUESS ==================== -->
+<div class="page" id="page-guess">
+  <div class="card">
+    <div class="center" style="margin-bottom:16px;">
+      <span class="badge badge-red">🎯 猜測階段</span>
+      <div style="margin-top:12px;font-size:1.1rem;font-weight:700">
+        <span id="guess-thinker">—</span>，誰是老實人？
+      </div>
+      <div class="muted mt8" style="font-size:0.85rem">只有一次機會，選完即公布！</div>
+    </div>
+    <div id="guess-list"></div>
+    <div class="err" id="guess-err">請先選一個人！</div>
+    <button class="btn btn-red mt16" onclick="confirmGuess()">🔍 就是他！公布答案</button>
+  </div>
+</div>
+
+<!-- ==================== REVEAL ==================== -->
+<div class="page" id="page-reveal">
+  <div class="card">
+    <div class="center" style="margin-bottom:16px;">
+      <span class="badge badge-red">📢 結果公布</span>
+    </div>
+
+    <div id="reveal-guess-result" style="border-radius:12px;padding:14px 18px;margin:12px 0;text-align:center;font-weight:700;font-size:1.05rem;"></div>
+    <div id="reveal-sticker-result" style="border-radius:12px;padding:14px 18px;margin:12px 0;text-align:center;font-weight:700;font-size:1.05rem;display:none;"></div>
+
+    <div class="section">所有玩家身份</div>
+    <div id="reveal-roles"></div>
+
+    <div class="section mt16">本輪答案</div>
+    <div class="meaning-box">
+      <div class="meaning-label">真正的意思</div>
+      <div class="word-big" id="reveal-word" style="font-size:1.5rem;margin-bottom:6px;">—</div>
+      <div class="meaning-text" id="reveal-meaning">—</div>
+    </div>
+
+    <div class="section">分數變動</div>
+    <div id="reveal-scores"></div>
+
+    <button class="btn btn-red mt16" onclick="showScoreboard()">🏆 查看排行榜</button>
+  </div>
+</div>
+
+<!-- ==================== SCOREBOARD ==================== -->
+<div class="page" id="page-scoreboard">
+  <div class="card">
+    <div class="center" style="margin-bottom:16px;">
+      <span class="badge badge-gold">🏆 排行榜</span>
+      <div class="muted mt8" id="sb-progress-text" style="font-size:0.85rem;"></div>
+      <div class="progress-wrap mt8" style="max-width:300px;margin:8px auto 0;">
+        <div class="progress-fill" id="sb-progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <div id="scoreboard-list"></div>
+    <button class="btn btn-red mt16" id="sb-next-btn" onclick="nextRound()">➡️ 下一輪</button>
+    <button class="btn btn-ghost" id="sb-end-btn" onclick="endGame()">🏁 結束遊戲</button>
+  </div>
+</div>
+
+<!-- ==================== FINAL ==================== -->
+<div class="page" id="page-final">
+  <div class="float-logo center" style="margin-bottom:12px">🏆</div>
+  <div class="home-title mt8">遊戲結束！</div>
+  <div class="card mt16" style="max-width:480px;">
+    <div class="section">最終排名</div>
+    <div id="final-list"></div>
+    <button class="btn btn-red mt24" onclick="restartGame()">🔄 再玩一局</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  WORD DATABASE — 有故事的詞語：名字看不出意思，但背後大有來頭
+// ============================================================
+const WORDS = [
+  { word:"南森護照",       zhuyin:"ㄋㄢˊ ㄙㄣ ㄏㄨˋ ㄓㄠˋ",           meaning:"1922年國際聯盟為戰後難民發行的旅行文件，讓無國籍人士能跨國旅行。以挪威探險家弗里喬夫·南森命名" },
+  { word:"波將金村",       zhuyin:"ㄅㄛ ㄐㄧㄤ ㄐㄧㄣ ㄘㄨㄣ",           meaning:"18世紀俄羅斯官員為欺騙女皇巡視而搭建的假繁榮村莊。現指一切表面光鮮、實際空洞的虛假形象" },
+  { word:"巴納姆效應",     zhuyin:"ㄅㄚ ㄋㄚˋ ㄇㄨˇ ㄒㄧㄠˋ ㄧㄥˋ",     meaning:"人們傾向認為模糊籠統的描述準確說出了自己。這就是為什麼算命和星座讓人覺得「好準」" },
+  { word:"耶路撒冷症候群", zhuyin:"ㄧㄝ ㄌㄨˋ ㄙㄚ ㄌㄥˇ ㄓㄥˋ ㄏㄡˋ ㄑㄩㄣˊ", meaning:"遊客抵達耶路撒冷後突然以為自己是聖經先知或救世主的真實精神疾病，每年都有案例" },
+  { word:"達克效應",       zhuyin:"ㄉㄚˊ ㄎㄜˋ ㄒㄧㄠˋ ㄧㄥˋ",         meaning:"能力越差的人越自信，能力越強反而越謙遜——因為強者清楚知道「自己還不知道什麼」" },
+  { word:"烏比岡湖效應",   zhuyin:"ㄨ ㄅㄧˇ ㄍㄤ ㄏㄨˊ ㄒㄧㄠˋ ㄧㄥˋ",   meaning:"幾乎所有人都認為自己高於平均水準，但統計上這不可能。名稱來自虛構小說中「所有孩子都高於平均」的小鎮" },
+  { word:"蒙提霍爾問題",   zhuyin:"ㄇㄥˊ ㄊㄧˊ ㄏㄨㄛˋ ㄦˊ ㄨㄣˋ ㄊㄧˊ",   meaning:"電視節目：3扇門選一扇有獎，主持人打開一扇空的，你換不換？數學上應該換！勝率從33%升至67%，但直覺說別換" },
+  { word:"齊加尼克效應",   zhuyin:"ㄑㄧˊ ㄐㄧㄚ ㄋㄧˊ ㄎㄜˋ ㄒㄧㄠˋ ㄧㄥˋ", meaning:"未完成的任務比已完成的更容易記住。這就是影集不演完讓你一直掛念的原因" },
+  { word:"卡里古拉效應",   zhuyin:"ㄎㄚ ㄌㄧˇ ㄍㄨˇ ㄌㄚ ㄒㄧㄠˋ ㄧㄥˋ",  meaning:"越是被禁止的事，人們越想要。1979年電影「卡里古拉」被禁播後，反而讓更多人慕名想看" },
+  { word:"弗林效應",       zhuyin:"ㄈㄨˊ ㄌㄧㄣˊ ㄒㄧㄠˋ ㄧㄥˋ",         meaning:"全球人類平均智商每10年上升約3分，研究者至今仍不清楚確切原因" },
+  { word:"斯德哥爾摩症候群", zhuyin:"ㄙ ㄉㄜˊ ㄍㄜ ㄦˇ ㄇㄛ ㄓㄥˋ ㄏㄡˋ ㄑㄩㄣˊ", meaning:"人質對綁匪產生好感與認同，甚至為對方辯護。來自1973年瑞典一場長達6天的銀行劫持事件" },
+  { word:"帕金森定律",     zhuyin:"ㄆㄚˋ ㄐㄧㄣ ㄙㄣ ㄉㄧㄥˋ ㄌㄩˋ",       meaning:"「工作會自動膨脹填滿所有可用時間」——不管給你多少時間，工作總會剛好用完" },
+  { word:"彼得原理",       zhuyin:"ㄅㄧˇ ㄉㄜˊ ㄩㄢˊ ㄌㄧˇ",             meaning:"組織中每個人都會被晉升到自己能力無法勝任的職位——所以每個位子最後都被不適任的人佔著" },
+  { word:"奧卡姆剃刀",     zhuyin:"ㄠˋ ㄎㄚˋ ㄇㄨˇ ㄊㄧˋ ㄉㄠ",           meaning:"「假設越少越好」——面對多種解釋時，最簡單的往往最正確，別把問題複雜化" },
+  { word:"格雷欣定律",     zhuyin:"ㄍㄜˊ ㄌㄟˊ ㄒㄧㄣ ㄉㄧㄥˋ ㄌㄩˋ",       meaning:"「劣幣驅逐良幣」——品質差的錢幣把好錢幣趕出流通，因為人們囤積好的、花掉差的" },
+  { word:"鄧巴數字",       zhuyin:"ㄉㄥ ㄅㄚ ㄕㄨˋ ㄗˋ",                 meaning:"人類大腦能維持穩定社交關係的上限約150人，超過就很難保持真正有意義的關係" },
+  { word:"馬太效應",       zhuyin:"ㄇㄚˇ ㄊㄞˋ ㄒㄧㄠˋ ㄧㄥˋ",           meaning:"「越有的越多，越沒有的越少」——成功帶來更多成功，失敗讓失敗更容易。來自聖經馬太福音" },
+  { word:"黑天鵝效應",     zhuyin:"ㄏㄟ ㄊㄧㄢ ㄜˊ ㄒㄧㄠˋ ㄧㄥˋ",         meaning:"極低概率但影響巨大的事件。歐洲人以為天鵝全是白的，直到1697年在澳洲看到黑天鵝才意識到假設有多脆弱" },
+  { word:"霍桑效應",       zhuyin:"ㄏㄨㄛˋ ㄕㄢ ㄒㄧㄠˋ ㄧㄥˋ",           meaning:"被觀察的工人生產力會提升——不是因為環境改善，而是因為他們知道自己被看著" },
+  { word:"巴黎症候群",     zhuyin:"ㄅㄚ ㄌㄧˊ ㄓㄥˋ ㄏㄡˋ ㄑㄩㄣˊ",       meaning:"日本遊客到巴黎後，因現實與夢中的浪漫落差太大而產生的心理創傷，每年有數十人嚴重到需要緊急回國" },
+  { word:"曼德拉效應",     zhuyin:"ㄇㄢˋ ㄉㄜˊ ㄌㄚ ㄒㄧㄠˋ ㄧㄥˋ",         meaning:"很多人共同「記得」一件從未發生的事。最有名的是很多人記得曼德拉在獄中去世，但他其實活到2013年" },
+  { word:"帕斯卡賭注",     zhuyin:"ㄆㄚˋ ㄙ ㄎㄚˇ ㄉㄨˇ ㄓㄨˋ",           meaning:"「相信上帝是合理的賭注」——若上帝存在你信了就得救；若不存在你也沒損失多少。一種機率論證" },
+  { word:"費米估算",       zhuyin:"ㄈㄟˊ ㄇㄧˇ ㄍㄨ ㄙㄨㄢˋ",             meaning:"用少量已知資訊快速估算看似無法回答的問題。例如「台灣有多少個美髮師？」靠人口、理髮頻率就能算" },
+  { word:"圖靈測試",       zhuyin:"ㄊㄨˊ ㄌㄧㄥˊ ㄘㄜˋ ㄕˋ",             meaning:"透過文字對話，如果你分不清對方是人還是機器，這台機器就通過了測試，被認為具備人類智能" },
+  { word:"普魯士藍",       zhuyin:"ㄆㄨˇ ㄌㄨˇ ㄕˋ ㄌㄢˊ",               meaning:"1704年一位德國染料師想製作紅色染料，卻偶然發現了世界第一種人工合成藍色，藍色從此不再昂貴" },
+  { word:"費馬大定理",     zhuyin:"ㄈㄟˊ ㄇㄚˇ ㄉㄚˋ ㄉㄧㄥˋ ㄌㄧˇ",       meaning:"1637年費馬在書頁空白處寫下「我發現了絕妙證明，但空白太小寫不下」，這謎題懸掛數學界358年才被解決" },
+  { word:"涓滴效應",       zhuyin:"ㄐㄩㄢ ㄉㄧ ㄒㄧㄠˋ ㄧㄥˋ",             meaning:"「讓富人先富，財富自然滴下來給窮人」的經濟理論——是否真實有效至今仍是政治上的激烈爭議" },
+  { word:"克萊因瓶",       zhuyin:"ㄎㄜˋ ㄌㄞˊ ㄣ ㄆㄧㄥˊ",               meaning:"一種沒有內外之分的神奇瓶子，在三維空間中無法真正存在，只有在四維才能完整呈現" },
+  { word:"齊普夫定律",     zhuyin:"ㄑㄧˊ ㄆㄨˇ ㄈㄨ ㄉㄧㄥˋ ㄌㄩˋ",         meaning:"任何語言中最常用的詞，出現頻率是第二常用詞的兩倍、第三的三倍……幾乎所有語言和排行榜都符合這規律" },
+  { word:"海因茨兩難",     zhuyin:"ㄏㄞˇ ㄧㄣ ㄘˊ ㄌㄧㄤˇ ㄋㄢˊ",           meaning:"心理學道德實驗：妻子快死了，藥買不起，你會偷嗎？用來研究人類道德發展的不同階段" },
+  { word:"盧德分子",       zhuyin:"ㄌㄨˊ ㄉㄜˊ ㄈㄣ ㄗˇ",                 meaning:"19世紀英國反對工業化的工人，會闖入工廠砸毀機器。現指任何強烈反對新科技的人" },
+  { word:"比基尼環礁",     zhuyin:"ㄅㄧˇ ㄐㄧ ㄋㄧ ㄏㄨㄢˊ ㄐㄧㄠ",         meaning:"美軍進行核武試驗的太平洋小島。比基尼泳裝就是以此命名，設計師認為這款泳裝的震撼會像原子彈一樣" },
+  { word:"皮格馬利翁效應", zhuyin:"ㄆㄧˊ ㄍㄜˊ ㄇㄚˇ ㄌㄧˋ ㄨㄥ ㄒㄧㄠˋ ㄧㄥˋ", meaning:"你期待某人表現好，他們就真的表現更好。老師被告知某學生是天才，那學生成績就真的進步了" },
+  { word:"薛丁格的貓",     zhuyin:"ㄒㄩㄝ ㄉㄧㄥ ㄍㄜˊ ㄉㄜ˙ ㄇㄠ",         meaning:"量子力學思想實驗：貓在箱子裡同時處於活著和死亡兩種狀態，直到你打開箱子才確定是哪一種" },
+  { word:"恐怖谷理論",     zhuyin:"ㄎㄨㄥˇ ㄅㄨˋ ㄍㄨˇ ㄌㄧˇ ㄌㄨㄣˋ",       meaning:"機器人越接近真人越讓人好感，但到了「幾乎像人」的臨界點，反而讓人感到毛骨悚然" },
+  { word:"海姆利克急救法", zhuyin:"ㄏㄞˇ ㄇㄧˇ ㄌㄧˋ ㄐㄧˊ ㄐㄧㄡˋ ㄈㄚˇ",   meaning:"食物卡喉時從後方環抱腹部猛力向上衝擊的急救法。發明者本人直到101歲才在現實中第一次親自使用它" },
+  { word:"羅森塔爾效應",   zhuyin:"ㄌㄨㄛˊ ㄙㄣ ㄊㄚˊ ㄦˇ ㄒㄧㄠˋ ㄧㄥˋ",   meaning:"老師期待哪個學生表現好，那個學生就真的表現更好——即使那孩子是隨機選出的" },
+  { word:"費米悖論",       zhuyin:"ㄈㄟˊ ㄇㄧˇ ㄅㄟˋ ㄌㄨㄣˋ",             meaning:"宇宙這麼大又這麼老，照理應充滿外星文明，但我們什麼都偵測不到——這矛盾讓科學家困惑了幾十年" },
+  { word:"彼得潘症候群",   zhuyin:"ㄅㄧˇ ㄉㄜˊ ㄆㄢ ㄓㄥˋ ㄏㄡˋ ㄑㄩㄣˊ",   meaning:"成年人在心理上拒絕長大——逃避責任、無法建立穩定關係，永遠想活在無憂的童年" },
+  { word:"奧斯卡詛咒",     zhuyin:"ㄠˋ ㄙ ㄎㄚˇ ㄗㄨˇ ㄓㄡˋ",             meaning:"女演員獲得奧斯卡影后後，婚姻往往以失敗告終——研究發現這個統計現象在數據上真實存在" },
+  { word:"安慰劑效應",     zhuyin:"ㄢ ㄨㄟˋ ㄐㄧˋ ㄒㄧㄠˋ ㄧㄥˋ",           meaning:"吃了完全沒有藥效的假藥，但因為相信它有效，症狀就真的改善了——連腦部掃描都看得到真實的生理變化" },
+  { word:"破窗謬論",       zhuyin:"ㄆㄛˋ ㄔㄨㄤ ㄇㄧㄡˋ ㄌㄨㄣˋ",           meaning:"「打破窗戶能刺激經濟」是謬論——修窗的錢本可買其他東西，玻璃商賺了，但社會整體財富其實減少了" },
+  { word:"定錨效應",       zhuyin:"ㄉㄧㄥˋ ㄇㄠˊ ㄒㄧㄠˋ ㄧㄥˋ",           meaning:"你聽到的第一個數字會嚴重影響後續判斷。原價1000元的衣服打折賣700，感覺比直接標700便宜" },
+  { word:"稟賦效應",       zhuyin:"ㄅㄧㄥˇ ㄈㄨˋ ㄒㄧㄠˋ ㄧㄥˋ",           meaning:"我們會高估自己擁有的東西的價值——同一個杯子，擁有者要求的售價往往比買家願意付的高一倍" },
+  { word:"沉沒成本謬誤",   zhuyin:"ㄔㄣˊ ㄇㄛˋ ㄔㄥˊ ㄅㄣˇ ㄇㄧㄡˋ ㄨˋ",   meaning:"因為已經花了錢、時間或心力，就繼續投入明知不值得的事——電影很爛但因為票買了就看完，就是這個" },
+  { word:"伊卡洛斯悖論",   zhuyin:"ㄧ ㄎㄚˇ ㄌㄨㄛˋ ㄙ ㄅㄟˋ ㄌㄨㄣˋ",     meaning:"讓企業成功的因素往往也是導致它失敗的原因。Nokia靠品質稱霸，卻因過度堅守品質文化而錯失智慧型手機時代" },
+  { word:"德雷福斯事件",   zhuyin:"ㄉㄜˊ ㄌㄟˊ ㄈㄨˊ ㄙ ㄕˋ ㄐㄧㄢˋ",       meaning:"1894年法國猶太軍官德雷福斯被冤枉為德國間諜，全國輿論分裂，引發歐洲對反猶太主義的大辯論，影響深遠" },
+  { word:"雙縫實驗",       zhuyin:"ㄕㄨㄤ ㄈㄥˋ ㄕˊ ㄧㄢˋ",               meaning:"電子或光子穿過兩道縫時，只要有人觀測，就會「乖乖」選一道縫；沒人看時，它們卻同時穿過兩道——量子最詭異的現象" },
+  { word:"普魯斯特效應",   zhuyin:"ㄆㄨˇ ㄌㄨˋ ㄙ ㄊㄜˋ ㄒㄧㄠˋ ㄧㄥˋ",   meaning:"一種氣味或滋味突然喚醒塵封已久的記憶，情緒鮮活如初。以法國作家普魯斯特聞到瑪德蓮蛋糕香氣回憶童年命名" },
+  { word:"波蘭的蛤蜊",     zhuyin:"ㄅㄛ ㄌㄢˊ ㄉㄜ˙ ㄏㄜˊ ㄌㄧˊ",           meaning:"波蘭部分城市用8隻活蛤蜊監測自來水水質——蛤蜊殼一閉上，感應器就自動發警報、切斷供水" },
+];
+
+// deduplicate
+const WORD_POOL = [...new Map(WORDS.map(w=>[w.word,w])).values()];
+
+// ============================================================
+//  STATE
+// ============================================================
+const ROLE_HONEST = "老實人";
+const ROLE_BLUFF  = "瞎掰人";
+const ROLE_THINK  = "想想";
+
+let G = {
+  players: [],         // string[]
+  scores: {},          // name -> number
+  round: 0,
+  totalRounds: 0,
+  thinkerIdx: 0,
+  usedThinkers: new Set(), // 已當過想想的玩家
+  roles: {},           // name -> role string
+  word: null,          // {word, meaning}
+  usedWords: new Set(),
+  stickerOn: null,     // player name | null
+  guessTarget: null,
+  peekOrder: [],       // non-想想 players in order
+  peekIdx: 0,
+  speakerIdx: 0,
+  nightTimerInterval: null,
+  peekTimerInterval: null,
+};
+
+// ============================================================
+//  UTIL
+// ============================================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(()=>{ el.style.display='none'; }, 2500);
+}
+function rand(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+const MEDALS = ['🥇','🥈','🥉','🏅','🏅','🏅','🏅','🏅','🏅'];
+
+// ── 語音播報 ──
+function speak(text, onEnd) {
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-TW';
+  u.rate = 0.85;
+  u.pitch = 1;
+  if (onEnd) u.onend = onEnd;
+  window.speechSynthesis.speak(u);
+}
+
+// 詞語 + 注音 顯示 HTML
+function wordHTML(w, size) {
+  const fs = size || '1.8rem';
+  return `<span style="font-size:${fs};font-weight:900;color:#fb7185;letter-spacing:3px;">${w.word}</span>`;
+}
+
+// ============================================================
+//  HOME
+// ============================================================
+document.getElementById('name-input').addEventListener('keydown', e => {
+  if(e.key==='Enter') addPlayer();
+});
+
+function addPlayer() {
+  const inp = document.getElementById('name-input');
+  const name = inp.value.trim();
+  if(!name) return;
+  if(G.players.includes(name)) { showErr('home-err','名字重複了！'); return; }
+  if(G.players.length >= 9)    { showErr('home-err','最多9人！'); return; }
+  G.players.push(name);
+  inp.value = '';
+  renderPlayerList();
+}
+function removePlayer(name) {
+  G.players = G.players.filter(p=>p!==name);
+  renderPlayerList();
+}
+function renderPlayerList() {
+  document.getElementById('player-list').innerHTML =
+    G.players.map(p=>
+      `<div class="ptag">${p}<span class="x" onclick="removePlayer('${p}')">×</span></div>`
+    ).join('');
+}
+function startGame() {
+  if(G.players.length < 4) { showErr('home-err','至少需要4名玩家！'); return; }
+  G.players.forEach(p => G.scores[p] = 3);
+  G.round = 0;
+  G.totalRounds = G.players.length;
+  G.usedWords.clear();
+  G.usedThinkers = new Set();
+  showPickThinker();
+}
+
+function showPickThinker() {
+  const available = G.players.filter(p => !G.usedThinkers.has(p));
+  if (available.length === 0) { endGame(); return; }
+
+  const nextRoundNum = G.round + 1;
+  document.getElementById('pt-round-badge').textContent = `第 ${nextRoundNum} 輪`;
+
+  const availHTML = available.map(p =>
+    `<button class="guess-btn" onclick="pickThinker('${p}')" style="margin:6px 0;">
+      ${p}<span style="font-size:1rem;color:var(--muted);">→ 當想想</span>
+    </button>`
+  ).join('');
+
+  const usedHTML = [...G.usedThinkers].map(p =>
+    `<div style="padding:10px 14px;color:var(--muted);font-size:0.9rem;text-decoration:line-through;letter-spacing:1px;">${p} ✓ 已當過</div>`
+  ).join('');
+
+  document.getElementById('pick-thinker-list').innerHTML = availHTML + usedHTML;
+  showPage('page-pick-thinker');
+}
+
+function pickThinker(name) {
+  G.thinkerIdx = G.players.indexOf(name);
+  G.usedThinkers.add(name);
+  startRound();
+}
+
+// ============================================================
+//  ROUND START
+// ============================================================
+function startRound() {
+  G.round++;
+  G.stickerOn = null;
+  G.guessTarget = null;
+  G.speakerIdx = 0;
+
+  // Pick word
+  const available = WORD_POOL.filter(w => !G.usedWords.has(w.word));
+  G.word = available.length > 0 ? rand(available) : rand(WORD_POOL);
+  G.usedWords.add(G.word.word);
+
+  // Assign roles
+  const thinker = G.players[G.thinkerIdx % G.players.length];
+  const others = G.players.filter(p=>p!==thinker);
+  // shuffle others
+  for(let i=others.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [others[i],others[j]]=[others[j],others[i]];
+  }
+  G.roles = {};
+  G.roles[thinker] = ROLE_THINK;
+  G.roles[others[0]] = ROLE_HONEST;
+  for(let i=1;i<others.length;i++) G.roles[others[i]] = ROLE_BLUFF;
+
+  // Peek order = non-想想 players (we can randomize or keep original order)
+  G.peekOrder = G.players.filter(p=>p!==thinker);
+  G.peekIdx = 0;
+
+  // Update round intro UI
+  document.getElementById('ri-round-badge').textContent = `第 ${G.round} 輪`;
+  document.getElementById('ri-thinker').textContent = thinker;
+  document.getElementById('ri-word').innerHTML = wordHTML(G.word, '2.4rem');
+  showPage('page-round-intro');
+}
+
+// ============================================================
+//  ROLE PEEK
+// ============================================================
+function startRolePeek() {
+  G.peekIdx = 0;
+  showPeekFor(G.peekIdx);
+}
+
+function showPeekFor(idx) {
+  const name = G.peekOrder[idx];
+  document.getElementById('peek-name').textContent = name;
+  document.getElementById('peek-action').style.display = 'block';
+  document.getElementById('peek-role-display').style.display = 'none';
+  showPage('page-role-peek');
+}
+
+function showRole() {
+  const name = G.peekOrder[G.peekIdx];
+  const role = G.roles[name];
+  const isHonest = role === ROLE_HONEST;
+
+  const card = document.getElementById('peek-reveal-card');
+  card.className = 'role-reveal ' + (isHonest ? 'honest' : 'bluffer');
+  document.getElementById('peek-emoji').textContent = isHonest ? '🤓' : '🤥';
+  document.getElementById('peek-role-name').textContent = role;
+  document.getElementById('peek-role-hint').textContent = isHonest
+    ? '等一下天黑時你會看到答案，記好了再說出來。'
+    : '編造一個假解釋，讓想想以為你是老實人。';
+
+  document.getElementById('peek-action').style.display = 'none';
+  document.getElementById('peek-role-display').style.display = 'block';
+  document.getElementById('peek-remember-btn').style.display = 'block';
+}
+
+function nextPeek() {
+  G.peekIdx++;
+  if(G.peekIdx < G.peekOrder.length) {
+    showPeekFor(G.peekIdx);
+  } else {
+    startNight();
+  }
+}
+
+// ============================================================
+//  NIGHT PHASE
+// ============================================================
+function startNight() {
+  clearInterval(G.nightTimerInterval);
+  showNightDiv('night-pre');
+  showPage('page-night');
+}
+
+function showNightDiv(id) {
+  ['night-pre','night-dark','night-honest','night-dawn'].forEach(d =>
+    document.getElementById(d).style.display = d === id ? 'block' : 'none');
+}
+
+function startNightPhase() {
+  clearInterval(G.nightTimerInterval);
+
+  // 1. 天黑請閉眼 → 停1秒 → 老實人請睜眼
+  showNightDiv('night-dark');
+  document.querySelector('#night-dark div:last-child').textContent = '天黑請閉眼';
+  speak('天黑請閉眼');
+
+  setTimeout(() => {
+    // 2. 老實人請睜眼（先只顯示標題）
+    showNightDiv('night-honest');
+    document.getElementById('night-honest-answer').style.display = 'none';
+    speak('老實人請睜眼');
+
+    // 停1秒後顯示答案與計時器
+    setTimeout(() => {
+      document.getElementById('night-answer-content').innerHTML =
+        wordHTML(G.word, '2rem') +
+        `<div style="margin-top:12px;font-size:1.15rem;line-height:1.8;">${G.word.meaning}</div>`;
+      document.getElementById('night-honest-answer').style.display = 'block';
+
+      const circle = document.getElementById('night-timer-circle');
+      const textEl = document.getElementById('night-timer-text');
+      const circ = 301.6;
+      let t = 9;
+      textEl.textContent = t;
+      circle.style.strokeDashoffset = 0;
+      circle.style.stroke = '#22c55e';
+
+      G.nightTimerInterval = setInterval(() => {
+        t--;
+        textEl.textContent = t;
+        circle.style.strokeDashoffset = circ * (1 - t / 9);
+        if (t <= 3) circle.style.stroke = '#ef4444';
+        if (t <= 0) {
+          clearInterval(G.nightTimerInterval);
+
+          // 3. 老實人請閉眼 → 停1秒 → 天亮請睜眼
+          showNightDiv('night-dark');
+          document.querySelector('#night-dark div:last-child').textContent = '老實人請閉眼';
+          speak('老實人請閉眼');
+
+          setTimeout(() => {
+            // 4. 天亮請睜眼
+            showNightDiv('night-dawn');
+            speak('天亮請睜眼');
+          }, 3000); // 老實人請閉眼語音(~2s) + 1s停頓
+        }
+      }, 1000);
+    }, 3000); // 老實人請睜眼語音(~2s) + 1s停頓
+  }, 4000); // 天黑請閉眼語音(~1.5s) + 2.5s停頓
+}
+
+// ============================================================
+//  DAY PHASE
+// ============================================================
+function startDay() {
+  const thinker = G.players[G.thinkerIdx % G.players.length];
+  document.getElementById('day-round-badge').textContent = `第 ${G.round} 輪`;
+  document.getElementById('day-word').innerHTML = wordHTML(G.word, '1.6rem');
+  document.getElementById('day-thinker').textContent = thinker;
+  G.speakerIdx = 0;
+
+  renderSpeakerList();
+  showPage('page-day');
+}
+
+function renderSpeakerList() {
+  const thinker = G.players[G.thinkerIdx % G.players.length];
+  const speakers = G.players.filter(p=>p!==thinker);
+  document.getElementById('speaker-list').innerHTML = speakers.map((p,i) => {
+    const cls = i < G.speakerIdx ? 'done' : '';
+    const hasSticker = G.stickerOn === p;
+    return `<div class="speaker-row ${cls}${hasSticker?' sticker-active':''}" id="sprow-${i}" onclick="toggleSticker('${p}')" style="cursor:pointer;">
+      <span class="sname">${p}</span>
+      <span class="sticker-indicator">${hasSticker ? '🤥' : ''}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleSticker(name) {
+  G.stickerOn = (G.stickerOn === name) ? null : name;
+  renderSpeakerList();
+}
+
+function advanceSpeaker() {
+  const thinker = G.players[G.thinkerIdx % G.players.length];
+  const speakers = G.players.filter(p=>p!==thinker);
+  G.speakerIdx = Math.min(G.speakerIdx+1, speakers.length);
+  renderSpeakerList();
+}
+
+function goToGuess() {
+  const thinker = G.players[G.thinkerIdx % G.players.length];
+  document.getElementById('guess-thinker').textContent = thinker;
+  G.guessTarget = null;
+
+  const candidates = G.players.filter(p=>p!==thinker && p!==G.stickerOn);
+  document.getElementById('guess-list').innerHTML = candidates.map(p =>
+    `<button class="guess-btn" id="gbtn-${esc(p)}" onclick="selectGuess('${p}')">
+      ${p}
+      <span class="check">✅</span>
+    </button>`
+  ).join('');
+
+  document.getElementById('guess-err').style.display = 'none';
+  showPage('page-guess');
+}
+
+function esc(s) { return s.replace(/[^a-z0-9]/gi,'_'); }
+
+function selectGuess(name) {
+  G.guessTarget = name;
+  document.querySelectorAll('.guess-btn').forEach(b=>b.classList.remove('selected'));
+  const btn = document.getElementById('gbtn-'+esc(name));
+  if(btn) btn.classList.add('selected');
+}
+
+function confirmGuess() {
+  if(!G.guessTarget) { document.getElementById('guess-err').style.display='block'; return; }
+  showReveal();
+}
+
+// ============================================================
+//  REVEAL
+// ============================================================
+function showReveal() {
+  const thinker = G.players[G.thinkerIdx % G.players.length];
+  const honest = G.players.find(p=>G.roles[p]===ROLE_HONEST);
+  const guessCorrect = G.guessTarget === honest;
+
+  // Guess result banner
+  const gr = document.getElementById('reveal-guess-result');
+  if(guessCorrect) {
+    gr.style.background = 'rgba(34,197,94,0.12)';
+    gr.style.border = '2px solid rgba(34,197,94,0.4)';
+    gr.style.color = '#4ade80';
+    gr.textContent = `✅ 猜對了！${honest} 就是老實人！`;
+  } else {
+    gr.style.background = 'rgba(233,69,96,0.12)';
+    gr.style.border = '2px solid rgba(233,69,96,0.35)';
+    gr.style.color = '#fb7185';
+    gr.textContent = `❌ 猜錯了！${G.guessTarget} 是瞎掰人，真正的老實人是 ${honest}！`;
+  }
+
+  // Sticker result
+  const sr = document.getElementById('reveal-sticker-result');
+  if(G.stickerOn) {
+    sr.style.display = 'block';
+    const stickerOnHonest = G.stickerOn === honest;
+    if(stickerOnHonest) {
+      sr.style.background = 'rgba(233,69,96,0.12)';
+      sr.style.border = '2px solid rgba(233,69,96,0.3)';
+      sr.style.color = '#fb7185';
+      sr.textContent = `🤥 公蝦毀貼到老實人 ${G.stickerOn}！想想大扣分！`;
+    } else {
+      sr.style.background = 'rgba(245,166,35,0.1)';
+      sr.style.border = '2px solid rgba(245,166,35,0.3)';
+      sr.style.color = '#fbbf24';
+      sr.textContent = `🤥 公蝦毀貼到瞎掰人 ${G.stickerOn}！想想加分！`;
+    }
+  } else {
+    sr.style.display = 'none';
+  }
+
+  // All roles
+  document.getElementById('reveal-roles').innerHTML = G.players.map(p => {
+    const role = G.roles[p];
+    const cls = role===ROLE_THINK?'role-thinker-tag': role===ROLE_HONEST?'role-honest-tag':'role-bluff-tag';
+    const mark = p===G.guessTarget? ' ← 想想猜這個' : '';
+    const stk = p===G.stickerOn? ' 🤥' : '';
+    return `<div class="reveal-row">
+      <span class="sn">${p}${stk}</span>
+      <span class="reveal-role ${cls}">${role}</span>
+      <span class="muted" style="font-size:0.8rem">${mark}</span>
+    </div>`;
+  }).join('');
+
+  // Word/meaning
+  document.getElementById('reveal-word').innerHTML = wordHTML(G.word, '1.4rem');
+  document.getElementById('reveal-meaning').textContent = G.word.meaning;
+
+  // Calculate scores
+  const deltas = {};
+  G.players.forEach(p=>deltas[p]=0);
+
+  if(guessCorrect) {
+    deltas[thinker]  += 1;
+    deltas[honest]   += 1;
+  } else {
+    deltas[G.guessTarget] += 1;
+  }
+
+  if(G.stickerOn) {
+    const stickerOnHonest = G.stickerOn === honest;
+    if(stickerOnHonest) {
+      deltas[thinker]    -= 3;
+      deltas[G.stickerOn] -= 1;
+    } else {
+      deltas[thinker]    += 1;
+      deltas[G.stickerOn] -= 1;
+    }
+  }
+
+  // Apply
+  G.players.forEach(p=>{ G.scores[p] = (G.scores[p]||3) + deltas[p]; });
+
+  document.getElementById('reveal-scores').innerHTML = G.players.map(p => {
+    const d = deltas[p];
+    const cls = d>0?'plus':d<0?'minus':'zero';
+    const sign = d>0?'+':'';
+    return `<div class="reveal-row">
+      <span class="sn">${p}</span>
+      <span class="delta ${cls}">${sign}${d}</span>
+      <span class="pts">${G.scores[p]} 分</span>
+    </div>`;
+  }).join('');
+
+  showPage('page-reveal');
+}
+
+// ============================================================
+//  SCOREBOARD
+// ============================================================
+function showScoreboard() {
+  const sorted = [...G.players].sort((a,b)=>G.scores[b]-G.scores[a]);
+  document.getElementById('scoreboard-list').innerHTML = sorted.map((p,i)=>
+    `<div class="score-row ${i===0?'rank1':i===1?'rank2':i===2?'rank3':''}">
+      <span class="medal">${MEDALS[i]}</span>
+      <span class="sn">${p}</span>
+      <span class="pts">${G.scores[p]} 分</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('sb-progress-text').textContent = `進度：第 ${G.round} / ${G.totalRounds} 輪`;
+  document.getElementById('sb-progress-bar').style.width = (G.round/G.totalRounds*100)+'%';
+
+  const isLast = G.round >= G.totalRounds;
+  document.getElementById('sb-next-btn').style.display = isLast ? 'none' : 'flex';
+  document.getElementById('sb-end-btn').textContent = isLast ? '🏁 公布最終結果' : '🏁 提前結束';
+  showPage('page-scoreboard');
+}
+
+function nextRound() {
+  const remaining = G.players.filter(p => !G.usedThinkers.has(p));
+  if (remaining.length === 0) { endGame(); return; }
+  showPickThinker();
+}
+
+// ============================================================
+//  END GAME
+// ============================================================
+function endGame() {
+  const sorted = [...G.players].sort((a,b)=>G.scores[b]-G.scores[a]);
+  document.getElementById('final-list').innerHTML = sorted.map((p,i)=>
+    `<div class="score-row ${i===0?'rank1':i===1?'rank2':i===2?'rank3':''}">
+      <span class="medal">${MEDALS[i]}</span>
+      <span class="sn">${p}</span>
+      <span class="pts">${G.scores[p]} 分</span>
+    </div>`
+  ).join('');
+  showPage('page-final');
+}
+
+function restartGame() {
+  G.players.forEach(p=>G.scores[p]=3);
+  G.round = 0;
+  G.usedWords.clear();
+  G.usedThinkers = new Set();
+  showPickThinker();
+}
+</script>
+</body>
+</html>
